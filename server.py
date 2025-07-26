@@ -5,6 +5,7 @@ import os
 stripe.api_key = os.getenv("STRIPE_KEY")
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/create-checkout", methods=["POST"])
 def create_checkout():
