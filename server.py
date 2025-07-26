@@ -6,7 +6,7 @@ from flask_cors import CORS  # ←追加
 stripe.api_key = os.getenv("STRIPE_KEY")
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://www.yoyakukobo.com"])
 
 @app.route("/create-checkout", methods=["POST"])
 def create_checkout():
