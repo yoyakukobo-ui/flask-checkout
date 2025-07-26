@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: flask-checkout
+    runtime: python
+    buildCommand: ""
+    startCommand: gunicorn server:app
+    envVars:
+      - key: sk_test_51RggavKlht9nCJaiOSSErNi6V9nrZfYDiPgBxVjvwfDdskLfVzwG63wKla9fGSf9XYMR1FAWNcsTcr22Blo7vNx1007f5UK6wG
+        value: sk_test_....
