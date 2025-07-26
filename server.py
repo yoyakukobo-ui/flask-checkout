@@ -5,7 +5,7 @@ from flask_cors import CORS
 import requests
 from datetime import datetime, timedelta
 
-# 環境変数から取得（RenderのDashboardで設定しておく）
+# Stripe APIキー（Renderの環境変数で設定）
 stripe.api_key = os.getenv("STRIPE_KEY")
 
 app = Flask(__name__)
@@ -19,7 +19,6 @@ def create_checkout():
     data = request.get_json()
 
     email = data.get("login_id")
-    item_id = data.get("_id")
     class_name = data.get("class", "").lower()
 
     price_map = {
@@ -44,7 +43,6 @@ def create_checkout():
         }],
         customer_email=email,
         metadata={
-            "itemId": item_id,
             "class": class_name
         },
         success_url="https://www.yoyakukobo.com/thankskaikin?rc=test-site",
@@ -58,15 +56,12 @@ def confirm_payment():
     data = request.get_json()
 
     email = data.get("login_id")
-    item_id = data.get("_id")
 
-    # JST時刻でフォーマット
     now_jst = datetime.utcnow() + timedelta(hours=9)
-    timestamp = now_jst.strftime("%Y%m%d%H%M%S%f")[:-3]  # ミリ秒まで
+    timestamp = now_jst.strftime("%Y%m%d%H%M%S%f")[:-3]  # JSTでミリ秒まで
 
     payload = {
         "login_id": email,
-        "_id": item_id,
         "status2": "paid",
         "paytime": timestamp
     }
