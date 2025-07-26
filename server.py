@@ -1,13 +1,18 @@
 from flask import Flask, request, jsonify
 import stripe
 import os
-from flask_cors import CORS  # ←追加
+from flask_cors import CORS
+import requests
+from datetime import datetime, timedelta
 
-# Stripe APIキー（Renderの環境変数で設定済み）
+# 環境変数から取得（RenderのDashboardで設定しておく）
 stripe.api_key = os.getenv("STRIPE_KEY")
 
 app = Flask(__name__)
 CORS(app, origins=["https://www.yoyakukobo.com"], supports_credentials=True)
+
+# WixのCMS更新用エンドポイント
+WIX_CMS_UPDATE_URL = "https://www.yoyakukobo.com/_functions/updateCMS"
 
 @app.route("/create-checkout", methods=["POST"])
 def create_checkout():
@@ -46,9 +51,33 @@ def create_checkout():
         cancel_url="https://www.yoyakukobo.com/blank?rc=test-site"
     )
 
-    return jsonify({ "checkout_url": session.url })
+    return jsonify({"checkout_url": session.url})
+
+@app.route("/confirm-payment", methods=["POST"])
+def confirm_payment():
+    data = request.get_json()
+
+    email = data.get("login_id")
+    item_id = data.get("_id")
+
+    # JST時刻でフォーマット
+    now_jst = datetime.utcnow() + timedelta(hours=9)
+    timestamp = now_jst.strftime("%Y%m%d%H%M%S%f")[:-3]  # ミリ秒まで
+
+    payload = {
+        "login_id": email,
+        "_id": item_id,
+        "status2": "paid",
+        "paytime": timestamp
+    }
+
+    try:
+        res = requests.post(WIX_CMS_UPDATE_URL, json=payload)
+        res.raise_for_status()
+        return jsonify({"message": "CMS更新成功"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
