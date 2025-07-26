@@ -3,10 +3,11 @@ import stripe
 import os
 from flask_cors import CORS  # ←追加
 
+# Stripe APIキー（Renderの環境変数で設定済み）
 stripe.api_key = os.getenv("STRIPE_KEY")
 
 app = Flask(__name__)
-CORS(app, origins=["https://yoyakukobo.com"])
+CORS(app, origins=["https://www.yoyakukobo.com"], supports_credentials=True)
 
 @app.route("/create-checkout", methods=["POST"])
 def create_checkout():
@@ -47,7 +48,7 @@ def create_checkout():
 
     return jsonify({ "checkout_url": session.url })
 
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
